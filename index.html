@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 text-gray-900">
+    <main id="app" class="max-w-2xl mx-auto p-6"></main>
+
+    <script>
+      (() => {
+        /* ────────────────  KONFIGURACE  ──────────────── */
+        const QUESTIONS_URL =
+          "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQkPVIxQawAyPBf6YjqrMfBp11ghaQakJ_VdGm-6eI8nodVc_h3o-ZJPv5Dbax7F-BwmWn0UlgdCns/pub?output=csv";
+        const ENDPOINT_URL =
+          "https://script.google.com/macros/s/AKfycbzfSqGxk-FtOo06LA0W16YHlLRDIkvvxo8_Ze_mfI00tSsxVmfJGPv5CgdxrRX9pcOW/exec";
+
+        /* ──────────  GLOBÁLNÍ STAV  ────────── */
+        let questions = [];
+        let shuffled = [];
+        let currentIndex = 0;
+        const responses = {}; // { questionId: 'A'|'B' }
+        const respondentId = crypto.randomUUID();
+        let respondentEmail = "";
+        const app = document.getElementById("app");
+
+        /* ──────────  FIXNÍ HTML BLOKY  ────────── */
+        const INTRO_HTML = `
+          <section class="bg-white shadow rounded-2xl p-8 space-y-6 animate-fadeIn">
+            <h1 class="text-2xl font-bold">Děkujeme, že jste se rozhodli zúčastnit online experimentu zaměřeného na hodnocení jazykových jevů a rozhodování.</h1>
+
+            <h2 class="text-lg font-semibold">Co vás čeká?</h2>
+            <p>Celkem projdete <strong>48 samostatných situací</strong>. Každá situace obsahuje:</p>
+            <ul class="list-disc list-inside space-y-1">
+              <li>(1) stručný popis kontextu,</li>
+              <li>(2) jednu větu pronesenou postavou v dané situaci.</li>
+            </ul>
+
+            <h2 class="text-lg font-semibold">Váš úkol</h2>
+            <p>Na základě poskytnutého kontextu a věty vyberte z nabízených možností ten závěr, který by podle vás učinila daná osoba v dané situaci.</p>
+
+            <h2 class="text-lg font-semibold">Důležité</h2>
+            <ul class="list-disc list-inside space-y-1">
+              <li>Neberte v úvahu, co byste v této situaci udělali <strong>vy osobně</strong>.</li>
+              <li>Nehodnoťte ani to, co by „obecně dávalo největší smysl“.</li>
+              <li>Soustřeďte se výhradně na perspektivu a pravděpodobné uvažování postavy, jak je naznačeno v kontextu.</li>
+            </ul>
+
+            <h2 class="text-lg font-semibold">Praktické informace</h2>
+            <ul class="list-disc list-inside space-y-1">
+              <li>Experiment není časově omezen, ale většina účastníků ho dokončí za <strong>15 až 20&nbsp;minut</strong>.</li>
+              <li>Odpovědi nejsou „správné“ či „špatné“ v tradičním smyslu; zajímá nás vaše interpretace dané postavy.</li>
+              <li>Účast v experimentu je anonymní a vaše data budou zpracována pouze pro vědecké účely.</li>
+            </ul>
+
+            <p>Pokud je vše jasné, můžete přejít k první situaci. Děkujeme za vaši pozornost a spolupráci!</p>
+
+            <div class="space-y-2 pt-4">
+              <label for="email" class="block font-medium">Váš e‑mail (identifikátor):</label>
+              <input id="email" type="email" required autocomplete="email" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring focus:border-gray-700" />
+            </div>
+            <button id="startBtn" disabled class="w-full bg-gray-400 text-white py-2 rounded-xl shadow transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">Začít</button>
+          </section>`;
+
+        /* ─────────────  POMOCNÉ FUNKCE  ───────────── */
+        async function loadQuestions(url) {
+          const res = await fetch(url);
+          const txt = await res.text();
+          try {
+            const json = JSON.parse(txt);
+            return json.map((row, i) => ({
+              id: row.id ?? i + 1,
+              context: row.context ?? row.A ?? "",
+              sentence: row.sentence ?? row.B ?? "",
+              options: [row.C ?? "", row.D ?? ""],
+            }));
+          } catch {
+            const lines = txt.trim().split(/\r?\n/);
+            const parse = (l) =>
+              l.match(/("[^"]*"|[^,]+)/g).map((x) => x.replace(/^"|"$/g, ""));
+            return lines.slice(1).map((l, i) => {
+              const c = parse(l);
+              return {
+                id: i + 1,
+                context: c[0] ?? "",
+                sentence: c[1] ?? "",
+                options: [c[2] ?? "", c[3] ?? ""],
+              };
+            });
+          }
+        }
+
+        const shuffle = (arr) => {
+          const a = [...arr];
+          for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+          }
+          return a;
+        };
+
+        /* === API volání === */
+        function sendToSheet(partial = false) {
+          const payload = {
+            respondentId,
+            email: respondentEmail,
+            timestamp: Date.now(),
+            responses,
+            partial,
+          };
+          fetch(ENDPOINT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }).catch((e) => console.error("POST error", e));
+        }
+
+        /* ─────────────  RENDER FUNKCE  ───────────── */
+        function renderIntro() {
+          app.innerHTML = INTRO_HTML;
+          const emailInput = app.querySelector("#email");
+          const startBtn = app.querySelector("#startBtn");
+          emailInput.addEventListener("input", () => {
+            startBtn.disabled = !emailInput.checkValidity();
+          });
+          startBtn.addEventListener("click", () => {
+            respondentEmail = emailInput.value.trim();
+            shuffled = shuffle(questions);
+            currentIndex = 0;
+            sendToSheet(true); // připrav prázdný řádek
+            renderQuestion();
+          });
+        }
+
+        function renderQuestion() {
+          const q = shuffled[currentIndex];
+          const progressPercent = (currentIndex / shuffled.length) * 100;
+          app.innerHTML = `
+            <section class="bg-white shadow rounded-2xl p-8 animate-fadeIn">
+              <div class="w-full bg-gray-300 h-3 rounded-full mb-6 overflow-hidden"><div class="bg-gray-800 h-3" style="width:${progressPercent}%"></div></div>
+              <p class="mb-4 whitespace-pre-line">${q.context}</p>
+              <p class="mb-6"><em>${q.sentence}</em></p>
+              <form id="qForm" class="space-y-4">
+                ${q.options
+                  .map(
+                    (opt, i) => `<label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="answer" value="${i}" class="h-5 w-5 accent-gray-800" ${
+                      responses[q.id] === (i === 0 ? 'A' : 'B') ? 'checked' : ''} /><span>${opt}</span></label>`
+                  )
+                  .join("")}
+                <button type="submit" class="mt-6 w-full bg-gray-400 text-white py-2 rounded-xl shadow hover:bg-gray-800 transition">${
+                  currentIndex === shuffled.length - 1 ? "Odeslat" : "Další"
+                }</button>
+              </form>
+            </section>`;
+
+          const form = document.getElementById("qForm");
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const choice = form.querySelector("input[name='answer']:checked");
+            if (!choice) return alert("Prosím, vyberte jednu z možností.");
+            responses[q.id] = choice.value === "0" ? "A" : "B";
+            sendToSheet(true); // průběžně
+            if (currentIndex === shuffled.length - 1) {
+              finish();
+            } else {
+              currentIndex++;
+              renderQuestion();
+            }
+          });
+        }
+
+        function finish() {
+          sendToSheet(false); // finální
+          app.innerHTML = `<section class="bg-white shadow rounded-2xl p-8 text-center animate-fadeIn"><h1 class="text-2xl font-bold mb-4">Děkujeme za účast!</h1><p>Vaše odpovědi byly zaznamenány.</p></section>`;
+        }
+
+        /* ─────────────  START  ───────────── */
+        (async () => {
+          try {
+            questions = await loadQuestions(QUESTIONS_URL);
+            if (!questions.length) throw new Error("Seznam otázek je prázdný");
+            renderIntro();
+          } catch (err) {
+            console.error(err);
+            // Fallback pro náhled/offline: zobraz úvod, i když se otázky nestáhnou
+            questions = [];
+            renderIntro();
+          }
+        })();
+      })();
+    </script>
+  </body>
+</html>
