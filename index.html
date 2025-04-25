@@ -45,17 +45,17 @@
             <ul class="list-disc list-inside space-y-1">
               <li>Neberte v úvahu, co byste v této situaci udělali <strong>vy osobně</strong>.</li>
               <li>Nehodnoťte ani to, co by „obecně dávalo největší smysl“.</li>
-              <li>Soustřeďte se výhradně na perspektivu a pravděpodobné uvažování postavy, jak je naznačeno v kontextu.</li>
+              <li>Soustřeďte se výhradně na perspektivu dané postavy.</li>
             </ul>
 
             <h2 class="text-lg font-semibold">Praktické informace</h2>
             <ul class="list-disc list-inside space-y-1">
               <li>Experiment není časově omezen, ale většina účastníků ho dokončí za <strong>15 až 20&nbsp;minut</strong>.</li>
-              <li>Odpovědi nejsou „správné“ či „špatné“ v tradičním smyslu; zajímá nás vaše interpretace dané postavy.</li>
-              <li>Účast v experimentu je anonymní a vaše data budou zpracována pouze pro vědecké účely.</li>
+              <li>Odpovědi nejsou „správné“ či „špatné“ v tradičním smyslu; zajímá nás vaše interpretace chování dané postavy.</li>
+              <li>Vaše data budou v anonymizované podobě využita jako baseline.</li>
             </ul>
 
-            <p>Pokud je vše jasné, můžete přejít k první situaci. Děkujeme za vaši pozornost a spolupráci!</p>
+            <p>Děkujeme za vaši pozornost a spolupráci!</p>
 
             <div class="space-y-2 pt-4">
               <label for="email" class="block font-medium">Váš e‑mail:</label>
@@ -174,7 +174,7 @@
 
         function finish() {
           sendToSheet(false); // finální
-          app.innerHTML = `<section class="bg-white shadow rounded-2xl p-8 text-center animate-fadeIn"><h1 class="text-2xl font-bold mb-4">Děkujeme za účast!</h1><p>Vaše odpovědi byly zaznamenány.</p></section>`;
+          app.innerHTML = `<section class="bg-white shadow rounded-2xl p-8 text-center animate-fadeIn"><h1 class="text-2xl font-bold mb-4">Děkujeme za účast v experimentu.</h1><p>Vaše odpovědi byly zaznamenány. Budete-li mít nějaké dotazy, můžete se obrátit <a href="mailto:gvozdiak@flu.cas.cz">gvozdiak@flu.cas.cz</a>.</p></section>`;
         }
 
         /* ─────────────  START  ───────────── */
