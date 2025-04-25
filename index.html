@@ -98,11 +98,8 @@
       Object.assign(responses, savedResponses);
     }
 
-    shuffled = shuffle(questions);
-
-    // najdi první nezodpovězenou otázku
-    currentIndex = shuffled.findIndex(q => !responses[q.id]);
-    if (currentIndex === -1) currentIndex = shuffled.length; // všechny zodpovězené
+    shuffled = shuffle(questions).filter(q => !responses[q.id]);
+    currentIndex = 0;
 
     sendToSheet(true);
     renderQuestion();
@@ -110,24 +107,27 @@
 }
 
 function renderQuestion() {
+  if (currentIndex >= shuffled.length) {
+    finish();
+    return;
+  }
+
   const q = shuffled[currentIndex];
   const answered = Object.keys(responses).length;
-  const progressPercent = (answered / shuffled.length) * 100;
+  const progressPercent = (answered / questions.length) * 100;
   app.innerHTML = `
     <section class="bg-white shadow rounded-2xl p-8 animate-fadeIn">
       <div class="w-full bg-gray-300 h-3 rounded-full mb-6 overflow-hidden">
         <div class="bg-gray-800 h-3" style="width:${progressPercent}%"></div>
       </div>
-      <p class="mb-2 text-sm text-gray-600 text-right">${answered} / ${shuffled.length}</p>
+      <p class="mb-2 text-sm text-gray-600 text-right">${answered} / ${questions.length}</p>
       <p class="mb-4 whitespace-pre-line">${q.context}</p>
       <p class="mb-6"><em>${q.sentence}</em></p>
       <form id="qForm" class="space-y-4">
         ${q.options
           .map(
             (opt, i) => `<label class="flex items-center gap-3 cursor-pointer">
-              <input type="radio" name="answer" value="${i}" class="h-5 w-5 accent-gray-800" ${
-                responses[q.id] === (i === 0 ? 'A' : 'B') ? 'checked' : ''
-              } />
+              <input type="radio" name="answer" value="${i}" class="h-5 w-5 accent-gray-800" />
               <span>${opt}</span>
             </label>`
           )
@@ -151,15 +151,10 @@ function renderQuestion() {
     }));
 
     sendToSheet(true);
-    if (currentIndex === shuffled.length - 1) {
-      finish();
-    } else {
-      currentIndex++;
-      renderQuestion();
-    }
+    currentIndex++;
+    renderQuestion();
   });
 }
-
 
         function finish() {
           sendToSheet(false);
