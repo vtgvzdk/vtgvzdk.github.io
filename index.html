@@ -81,76 +81,85 @@
         }
 
         function renderIntro() {
-          app.innerHTML = INTRO_HTML;
-          const emailInput = app.querySelector("#email");
-          const startBtn = app.querySelector("#startBtn");
-          emailInput.addEventListener("input", () => {
-            startBtn.disabled = !emailInput.checkValidity();
-          });
-          startBtn.addEventListener("click", async () => {
-            respondentEmail = emailInput.value.trim();
-            respondentId = hashEmail(respondentEmail);
-            const storageKey = `exp_${respondentId}`;
+  app.innerHTML = INTRO_HTML;
+  const emailInput = app.querySelector("#email");
+  const startBtn = app.querySelector("#startBtn");
+  emailInput.addEventListener("input", () => {
+    startBtn.disabled = !emailInput.checkValidity();
+  });
+  startBtn.addEventListener("click", async () => {
+    respondentEmail = emailInput.value.trim();
+    respondentId = hashEmail(respondentEmail);
+    const storageKey = `exp_${respondentId}`;
 
-            const stored = localStorage.getItem(storageKey);
-            if (stored) {
-              const { savedResponses } = JSON.parse(stored);
-              Object.assign(responses, savedResponses);
-            }
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const { savedResponses } = JSON.parse(stored);
+      Object.assign(responses, savedResponses);
+    }
 
-            shuffled = shuffle(questions);
+    shuffled = shuffle(questions);
 
-            // najdi první nezodpovězenou otázku
-            currentIndex = shuffled.findIndex(q => !responses[q.id]);
-            if (currentIndex === -1) currentIndex = 0;
+    // najdi první nezodpovězenou otázku
+    currentIndex = shuffled.findIndex(q => !responses[q.id]);
+    if (currentIndex === -1) currentIndex = shuffled.length; // všechny zodpovězené
 
-            sendToSheet(true);
-            renderQuestion();
-          });
-        }
+    sendToSheet(true);
+    renderQuestion();
+  });
+}
 
-        function renderQuestion() {
-          const q = shuffled[currentIndex];
-          const progressPercent = (currentIndex / shuffled.length) * 100;
-          app.innerHTML = `
-            <section class="bg-white shadow rounded-2xl p-8 animate-fadeIn">
-              <div class="w-full bg-gray-300 h-3 rounded-full mb-6 overflow-hidden"><div class="bg-gray-800 h-3" style="width:${progressPercent}%"></div></div>
-              <p class="mb-4 whitespace-pre-line">${q.context}</p>
-              <p class="mb-6"><em>${q.sentence}</em></p>
-              <form id="qForm" class="space-y-4">
-                ${q.options
-                  .map(
-                    (opt, i) => `<label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="answer" value="${i}" class="h-5 w-5 accent-gray-800" ${
-                      responses[q.id] === (i === 0 ? 'A' : 'B') ? 'checked' : ''} /><span>${opt}</span></label>`
-                  )
-                  .join("")}
-                <button type="submit" class="mt-6 w-full bg-gray-400 text-white py-2 rounded-xl shadow hover:bg-gray-800 transition">${
-                  currentIndex === shuffled.length - 1 ? "Odeslat" : "Další"
-                }</button>
-              </form>
-            </section>`;
+function renderQuestion() {
+  const q = shuffled[currentIndex];
+  const answered = Object.keys(responses).length;
+  const progressPercent = (answered / shuffled.length) * 100;
+  app.innerHTML = `
+    <section class="bg-white shadow rounded-2xl p-8 animate-fadeIn">
+      <div class="w-full bg-gray-300 h-3 rounded-full mb-6 overflow-hidden">
+        <div class="bg-gray-800 h-3" style="width:${progressPercent}%"></div>
+      </div>
+      <p class="mb-2 text-sm text-gray-600 text-right">${answered} / ${shuffled.length}</p>
+      <p class="mb-4 whitespace-pre-line">${q.context}</p>
+      <p class="mb-6"><em>${q.sentence}</em></p>
+      <form id="qForm" class="space-y-4">
+        ${q.options
+          .map(
+            (opt, i) => `<label class="flex items-center gap-3 cursor-pointer">
+              <input type="radio" name="answer" value="${i}" class="h-5 w-5 accent-gray-800" ${
+                responses[q.id] === (i === 0 ? 'A' : 'B') ? 'checked' : ''
+              } />
+              <span>${opt}</span>
+            </label>`
+          )
+          .join("")}
+        <button type="submit" class="mt-6 w-full bg-gray-400 text-white py-2 rounded-xl shadow hover:bg-gray-800 transition">
+          ${currentIndex === shuffled.length - 1 ? "Odeslat" : "Další"}
+        </button>
+      </form>
+    </section>`;
 
-          const form = document.getElementById("qForm");
-          form.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const choice = form.querySelector("input[name='answer']:checked");
-            if (!choice) return alert("Prosím, vyberte jednu z možností.");
-            responses[q.id] = choice.value === "0" ? "A" : "B";
+  const form = document.getElementById("qForm");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const choice = form.querySelector("input[name='answer']:checked");
+    if (!choice) return alert("Prosím, vyberte jednu z možností.");
+    responses[q.id] = choice.value === "0" ? "A" : "B";
 
-            const storageKey = `exp_${respondentId}`;
-            localStorage.setItem(storageKey, JSON.stringify({
-              savedResponses: responses
-            }));
+    const storageKey = `exp_${respondentId}`;
+    localStorage.setItem(storageKey, JSON.stringify({
+      savedResponses: responses
+    }));
 
-            sendToSheet(true);
-            if (currentIndex === shuffled.length - 1) {
-              finish();
-            } else {
-              currentIndex++;
-              renderQuestion();
-            }
-          });
-        }
+    sendToSheet(true);
+    if (currentIndex === shuffled.length - 1) {
+      finish();
+    } else {
+      currentIndex++;
+      renderQuestion();
+    }
+  });
+}
+
 
         function finish() {
           sendToSheet(false);
