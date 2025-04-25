@@ -81,6 +81,13 @@
         }
 
         function renderIntro() {
+  app.innerHTML = INTRO_HTML + `<div class='text-center mt-6'><button id="restartBtn" class="text-sm text-gray-600 underline hover:text-gray-900">Začít znovu</button></div>`;
+  const restart = document.getElementById("restartBtn");
+  restart.addEventListener("click", () => {
+    const key = `exp_${respondentId}`;
+    localStorage.removeItem(key);
+    location.reload();
+  });
   app.innerHTML = INTRO_HTML;
   const emailInput = app.querySelector("#email");
   const startBtn = app.querySelector("#startBtn");
@@ -120,7 +127,6 @@ function renderQuestion() {
       <div class="w-full bg-gray-300 h-3 rounded-full mb-6 overflow-hidden">
         <div class="bg-gray-800 h-3" style="width:${progressPercent}%"></div>
       </div>
-      <p class="mb-2 text-sm text-gray-600 text-right">${answered} / ${questions.length}</p>
       <p class="mb-4 whitespace-pre-line">${q.context}</p>
       <p class="mb-6"><em>${q.sentence}</em></p>
       <form id="qForm" class="space-y-4">
