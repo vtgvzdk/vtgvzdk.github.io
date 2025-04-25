@@ -81,7 +81,7 @@
         }
 
         function renderIntro() {
-  app.innerHTML = INTRO_HTML + `<div class='text-center mt-6'><button id="restartBtn" class="mt-4 text-sm text-gray-600 underline hover:text-gray-900">Začít znovu</button></div>`;
+  app.innerHTML = INTRO_HTML;
   const restart = document.getElementById("restartBtn");
   restart.addEventListener("click", () => {
     const key = `exp_${respondentId}`;
