@@ -104,7 +104,40 @@
       Object.assign(responses, savedResponses);
     }
 
-    shuffled = shuffle(questions).filter(q => !responses[q.id]);
+    const unanswered = shuffle(questions).filter(q => !responses[q.id]);
+
+    if (Object.keys(responses).length > 0 && unanswered.length > 0) {
+      app.innerHTML = `<section class="bg-white shadow rounded-2xl p-8 space-y-4 animate-fadeIn">
+        <p>Zdá se, že jste již část experimentu absolvoval(a). Chcete pokračovat, kde jste skončil(a), nebo začít znovu?</p>
+        <div class="flex gap-4">
+          <button id="continueBtn" class="flex-1 bg-gray-400 text-white py-2 rounded-xl shadow hover:bg-gray-800 transition">Pokračovat</button>
+          <button id="restartBtn" class="flex-1 bg-white border border-gray-400 text-gray-800 py-2 rounded-xl shadow hover:bg-gray-200 transition">Začít znovu</button>
+        </div>
+      </section>`;
+
+      document.getElementById("continueBtn").addEventListener("click", () => {
+        shuffled = unanswered;
+        currentIndex = 0;
+        sendToSheet(true);
+        renderQuestion();
+      });
+
+      document.getElementById("restartBtn").addEventListener("click", () => {
+        localStorage.removeItem(storageKey);
+        location.reload();
+      });
+
+    } else if (unanswered.length === 0 && Object.keys(responses).length === questions.length) {
+      app.innerHTML = `<section class="bg-white shadow rounded-2xl p-8 text-center animate-fadeIn">
+        <h1 class="text-2xl font-bold mb-4">Experiment již absolvován</h1>
+        <p>Děkujeme, ale podle našich údajů jste již odpověděl(a) na všechny otázky.</p>
+      </section>`;
+    } else {
+      shuffled = unanswered;
+      currentIndex = 0;
+      sendToSheet(true);
+      renderQuestion();
+    }
     currentIndex = 0;
 
     sendToSheet(true);
