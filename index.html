@@ -81,15 +81,14 @@
         }
 
         function renderIntro() {
-  app.innerHTML = INTRO_HTML + `<div class='text-center mt-6'><button id="restartBtn" class="text-sm text-gray-600 underline hover:text-gray-900">Začít znovu</button></div>`;
+  app.innerHTML = INTRO_HTML + `<div class='text-center mt-6'><button id="restartBtn" class="mt-4 text-sm text-gray-600 underline hover:text-gray-900">Začít znovu</button></div>`;
   const restart = document.getElementById("restartBtn");
   restart.addEventListener("click", () => {
     const key = `exp_${respondentId}`;
     localStorage.removeItem(key);
     location.reload();
   });
-  app.innerHTML = INTRO_HTML;
-  const emailInput = app.querySelector("#email");
+    const emailInput = app.querySelector("#email");
   const startBtn = app.querySelector("#startBtn");
   emailInput.addEventListener("input", () => {
     startBtn.disabled = !emailInput.checkValidity();
