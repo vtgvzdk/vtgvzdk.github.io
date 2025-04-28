@@ -159,7 +159,7 @@ function renderQuestion() {
       <p class="mb-4 whitespace-pre-line">${q.context}</p>
       <p class="mb-6"><em>${q.sentence}</em></p>
       <form id="qForm" class="space-y-4">
-        ${q.options
+        ${shuffle(q.options)
           .map(
             (opt, i) => `<label class="flex items-center gap-3 cursor-pointer">
               <input type="radio" name="answer" value="${i}" class="h-5 w-5 accent-gray-800" />
