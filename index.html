@@ -149,6 +149,13 @@ function renderQuestion() {
   }
 
   const q = shuffled[currentIndex];
+
+  const originalOptions = q.options.map((opt, idx) => ({
+    text: opt,
+    label: idx === 0 ? 'A' : 'B'
+  }));
+
+  const randomizedOptions = shuffle(originalOptions);
   const answered = Object.keys(responses).length;
   const progressPercent = (answered / questions.length) * 100;
   app.innerHTML = `
@@ -159,7 +166,7 @@ function renderQuestion() {
       <p class="mb-4 whitespace-pre-line">${q.context}</p>
       <p class="mb-6"><em>${q.sentence}</em></p>
       <form id="qForm" class="space-y-4">
-        ${shuffle(q.options)
+        ${randomizedOptions
           .map(
             (opt, i) => `<label class="flex items-center gap-3 cursor-pointer">
               <input type="radio" name="answer" value="${i}" class="h-5 w-5 accent-gray-800" />
@@ -178,7 +185,7 @@ function renderQuestion() {
     e.preventDefault();
     const choice = form.querySelector("input[name='answer']:checked");
     if (!choice) return alert("Prosím, vyberte jednu z možností.");
-    responses[q.id] = choice.value === "0" ? "A" : "B";
+    responses[q.id] = randomizedOptions[choice.value].label;
 
     const storageKey = `exp_${respondentId}`;
     localStorage.setItem(storageKey, JSON.stringify({
