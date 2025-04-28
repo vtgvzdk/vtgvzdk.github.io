@@ -156,8 +156,10 @@ function renderQuestion() {
   }));
 
   const randomizedOptions = shuffle(originalOptions);
+
   const answered = Object.keys(responses).length;
   const progressPercent = (answered / questions.length) * 100;
+  
   app.innerHTML = `
     <section class="bg-white shadow rounded-2xl p-8 animate-fadeIn">
       <div class="w-full bg-gray-300 h-3 rounded-full mb-6 overflow-hidden">
@@ -170,7 +172,7 @@ function renderQuestion() {
           .map(
             (opt, i) => `<label class="flex items-center gap-3 cursor-pointer">
               <input type="radio" name="answer" value="${i}" class="h-5 w-5 accent-gray-800" />
-              <span>${opt}</span>
+              <span>${opt.text}</span> <!-- ✅ zde správně zobrazuješ text možnosti -->
             </label>`
           )
           .join("")}
@@ -185,7 +187,7 @@ function renderQuestion() {
     e.preventDefault();
     const choice = form.querySelector("input[name='answer']:checked");
     if (!choice) return alert("Prosím, vyberte jednu z možností.");
-    responses[q.id] = randomizedOptions[choice.value].label;
+    responses[q.id] = randomizedOptions[choice.value].label;  // ✅ uložíme správné A/B podle původu
 
     const storageKey = `exp_${respondentId}`;
     localStorage.setItem(storageKey, JSON.stringify({
