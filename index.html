@@ -207,28 +207,23 @@ function renderQuestion() {
 
         const INTRO_HTML = `
           <section class="bg-white shadow rounded-2xl p-8 space-y-6 animate-fadeIn">
-            <h1 class="text-2xl font-bold">Děkujeme, že jste se rozhodli zúčastnit online experimentu zaměřeného na hodnocení jazykových jevů a rozhodování.</h1>
+            <h1 class="text-2xl font-bold">Děkuji, že jste se rozhodli zúčastnit online experimentu zaměřeného na rozhodování.</h1>
             <h2 class="text-lg font-semibold">Co vás čeká?</h2>
-            <p>Celkem projdete <strong>48 samostatných situací</strong>. Každá situace obsahuje:</p>
-            <ul class="list-disc list-inside space-y-1">
-              <li>(1) stručný popis kontextu,</li>
-              <li>(2) jednu větu pronesenou postavou v dané situaci.</li>
-            </ul>
+            <p>Celkem projdete <strong>48 samostatných situací</strong>. Každá situace obsahuje stručný popis kontextu a jedno souvětí, které si postava v dané situaci říká.</p>
             <h2 class="text-lg font-semibold">Váš úkol</h2>
-            <p>Na základě poskytnutého kontextu a věty vyberte z nabízených možností ten závěr, který by podle vás učinila daná osoba v dané situaci.</p>
+            <p>Na základě kontextu a daného souvětí vyberte ze dvou nabízených možností ten závěr, který podle vás daná osoba v dané situaci učiní.</p>
             <h2 class="text-lg font-semibold">Důležité</h2>
             <ul class="list-disc list-inside space-y-1">
               <li>Neberte v úvahu, co byste v této situaci udělali <strong>vy osobně</strong>.</li>
-              <li>Nehodnoťte ani to, co by „obecně dávalo největší smysl“.</li>
-              <li>Soustřeďte se výhradně na perspektivu a pravděpodobné uvažování postavy, jak je naznačeno v kontextu.</li>
+              <li>Zaměřte se výhradně na perspektivu a pravděpodobné uvažování dané postavy v dané situaci s ohledem na dané souvětí.</li>
             </ul>
             <h2 class="text-lg font-semibold">Praktické informace</h2>
             <ul class="list-disc list-inside space-y-1">
-              <li>Experiment není časově omezen, ale většina účastníků ho dokončí za <strong>15 až 20&nbsp;minut</strong>.</li>
-              <li>Odpovědi nejsou „správné“ či „špatné“ v tradičním smyslu; zajímá nás vaše interpretace dané postavy.</li>
-              <li>Účast v experimentu je anonymní a vaše data budou zpracována pouze pro vědecké účely.</li>
+              <li>Experiment není časově omezen, ale většina účastníků a účastnic ho dokončí za <strong>15 až 20&nbsp;minut</strong>.</li>
+              <li>Odpovědi nejsou „správné“ či „špatné“ v tradičním smyslu. Zajímá nás, jak interpretujete chování dané postavy.</li>
+              <li>Data, která experiment sbírá, budou v <strong>anonymizované</strong> podobě využita (i) pro stanovení základní lidské úrovně odpovědí na otázky tohoto datasetu (v rámci projektu LINDAT LM2023062) a (ii) dále v komparativním výzkumu chování velkých jazykových modelů. Zadáním emailu níže s tímto užitím souhlasíte.</li>
             </ul>
-            <p>Pokud je vše jasné, můžete přejít k první situaci. Děkujeme za vaši pozornost a spolupráci!</p>
+            <p>Díky za spolupráci!</p>
             <div class="space-y-2 pt-4">
               <label for="email" class="block font-medium">Váš e‑mail (identifikátor):</label>
               <input id="email" type="email" required autocomplete="email" class="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring focus:border-gray-700" />
